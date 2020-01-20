@@ -1,18 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="@drawable/gradient"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
+
+    <ImageView
+        android:id="@+id/iVQSLogo"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="20dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:src="@drawable/qs" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/tVSecureText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/iVQSLogo"
+        android:layout_centerHorizontal="true"
+        android:textSize="15sp"
+        android:textColor="#000"
+        android:text="Bluetooth - based secure lock system\n\nLock MAC Address: FF:FF:30:04:C6:56" />
+
+    <TextView
+        android:id="@+id/connectedStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tVSecureText"
+        android:layout_centerHorizontal="true"
+        android:textSize="15sp"
+        android:textColor="#000"
+        android:layout_margin="10dp"
+        android:text="Status: Lock not detected"/>
+
+    <TextView
+        android:id="@+id/warn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/connectedStatus"
+        android:layout_centerHorizontal="true"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#000"
+        android:layout_margin="10dp"
+        android:text="Please make sure the light on the lock is blinking"/>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/animation_view"
+        android:layout_margin="20dp"
+        android:layout_below="@+id/warn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:lottie_rawRes="@raw/unlock"
+        app:lottie_loop="false"
+        app:lottie_autoPlay="false" />
+
+
+</RelativeLayout>
