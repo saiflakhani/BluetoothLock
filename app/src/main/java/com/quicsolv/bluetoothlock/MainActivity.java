@@ -28,6 +28,7 @@ import com.airbnb.lottie.LottieAnimationView;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
     String LOCK_MAC_ADDRESS = "FF:FF:30:04:C6:56";
     String LOCK_KEY = "41375902884721600622694758343588";
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
 
     @Override
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         animationView.setOnClickListener(touchAnimationListener);
         bluetoothManager = (BluetoothManager)getSystemService(Context.BLUETOOTH_SERVICE);
         adapter = bluetoothManager.getAdapter();
+        LOCK_KEY = convert_key_to_hex(LOCK_KEY);
         checkPermissions();
 
     }
@@ -140,10 +143,10 @@ public class MainActivity extends AppCompatActivity {
                 //
                 //setCharacteristicNotification(gatt,characteristic,true);
                 //characteristic.getDescriptors()
-                byte payload[] = {(byte)0xfc,(byte)0xa4,(byte)0x06,(byte)0x6b,(byte)0x50,(byte)0xa8,(byte)0x68,(byte)0xa4,(byte)0x10,(byte)0xbb,(byte)0x15,(byte)0x96,(byte)0xae,(byte)0x3c,(byte)0x48,(byte)0x43};
-                //descriptor.setValue(payload);
+                byte[] payload = {(byte)0x05,(byte)0x01,(byte)0x06,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00};
+                byte[] encrypted_payload = encrypt_data(payload);
                 //byte encrypted[] = encrypt_data(new String(payload));
-                characteristic.setValue(payload);
+                characteristic.setValue(encrypted_payload);
                 boolean check = gatt.writeCharacteristic(characteristic);
                 if(check)
                 {
@@ -203,10 +206,34 @@ public class MainActivity extends AppCompatActivity {
         return bluetoothGatt.writeDescriptor(descriptor); //descriptor write operation successfully started?
     }
 
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
+
 
     private View.OnClickListener touchAnimationListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+
+            //TEST CODE
+
+
+
             if (ourLock != null) {
                 animationView.playAnimation();
                 buttonPressed = true;
@@ -228,22 +255,47 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private byte[] encrypt_data(String data)
+    private String convert_key_to_hex(String key)
     {
-        byte[] cipherText = {0x00};
-        while(data.length()<16) {
-            data = data + "0";
+        String hexArray="";
+        for(int i=0;i<key.length();i+=2)
+        {
+            String currentHex = key.substring(i,i+2);
+            int cur = Integer.parseInt(currentHex);
+            //String hex = Integer.toHexString(cur);
+            String hex1 = String.format("%02X", cur);
+            hexArray+=hex1;
+        }
+        System.out.println("Key in Hex --->"+hexArray);
+        byte[] intermediate = hexStringToByteArray(hexArray);
+        System.out.println("Key in Hex --->"+new String(intermediate));
+        return new String(intermediate);
+    }
+
+
+    private byte[] encrypt_data(byte[] data)
+    {
+        byte[] cipherText={0x00};
+        int addNum = 0;
+        while(data.length<16) {
+            addNum++;
+        }
+        byte[] newPayload = new byte[data.length+addNum];
+
+        for(int i=0;i<data.length;i++)
+        {
+            newPayload[i]= data[i];
         }
         try {
             SecretKeySpec skeySpec = new SecretKeySpec(LOCK_KEY.getBytes(), "AES");
             Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-            System.out.println("data -->" + data);
-            cipherText = cipher.doFinal(data.getBytes());
+            System.out.println("data -->" + newPayload);
+            cipherText = cipher.doFinal(newPayload);
             //System.out.println("Base64 encoded: "+ Base64.encode(data.getBytes()).length);
 
             //byte[] original = cipher.doFinal(Base64.encode(data.getBytes()));
-            System.out.println("Cipher Text ----> " + cipherText);
+            System.out.println("Cipher Text ----> " + bytesToHex(cipherText));
             return cipherText;
         }catch(Exception e)
         {
