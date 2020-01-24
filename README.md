@@ -17,5 +17,6 @@ The lock used is a NokeLock O Device.
 This App is currently experimental and in Alpha stage.
 
 ## Future work
-Move from hardcoded keys to keys-per-lock
+~Move from hardcoded keys to keys-per-lock~
+Update: Fixed. You can now select and unlock the lock you want.
 
