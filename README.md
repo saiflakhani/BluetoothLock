@@ -14,9 +14,16 @@ The lock used is a NokeLock O Device.
 - Now you can use this app to unlock your lock
 
 ## Important
-This App is currently experimental and in Alpha stage.
+This App is currently experimental and in beta stage.
+
+## Current Version and changelog
+Version 2.0
+- Added functionality for multiple locks
+- Added better encryption support
+- Upgraded libraries from LeScan to BluetoothLeScanner
+- Added App Logos
 
 ## Future work
 ~Move from hardcoded keys to keys-per-lock~
-Update: Fixed. You can now select and unlock the lock you want.
+Update: Fixed in v2. You can now select and unlock the lock you want.
 
