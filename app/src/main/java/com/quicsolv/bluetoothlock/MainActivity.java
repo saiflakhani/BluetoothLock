@@ -13,6 +13,8 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -25,9 +27,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.quicsolv.bluetoothlock.pojo.LockProperties;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -45,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     BluetoothDevice ourLock=null;
     BluetoothGatt mBluetoothGatt;
     boolean buttonPressed = false;
-    TextView status;
+    TextView status,lockDetails;
     boolean bluetoothPermissions = false, locationPermissions = false;
 
     String LOCK_MAC_ADDRESS = "FF:FF:30:04:C6:56";
@@ -61,12 +65,40 @@ public class MainActivity extends AppCompatActivity {
         animationView.setVisibility(View.GONE);
         status = findViewById(R.id.connectedStatus);
         animationView.setOnClickListener(touchAnimationListener);
+        lockDetails = findViewById(R.id.tVLockDetails);
         bluetoothManager = (BluetoothManager)getSystemService(Context.BLUETOOTH_SERVICE);
         adapter = bluetoothManager.getAdapter();
+        getIntentIfAvailable();
         LOCK_KEY = convert_key_to_hex(LOCK_KEY);
         checkPermissions();
 
     }
+
+    private void getIntentIfAvailable()
+    {
+        try {
+            LockProperties currentLock = (LockProperties) getIntent().getSerializableExtra("LockProperties");
+            if (currentLock != null) {
+                LOCK_MAC_ADDRESS = currentLock.getMac();
+                String lockKeyVariables[] = currentLock.getLockKey().split(",");
+                String preProcessedKey = "";
+                for (String s:lockKeyVariables)
+                {
+                    if(s.length()==1)s = "0"+s;
+                    preProcessedKey+=s;
+                }
+                LOCK_KEY = preProcessedKey;
+                Log.d("LOCK RETRIEVED", currentLock.getName()+": "+currentLock.getMac()+" ---> "+LOCK_KEY);
+                lockDetails.setText("Lock Details: "+currentLock.getName()+": "+currentLock.getMac());
+            }
+
+        }catch (NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+
 
     private void checkPermissions()
     {
@@ -83,8 +115,8 @@ public class MainActivity extends AppCompatActivity {
             locationPermissions = true;
         }
         if(locationPermissions && bluetoothPermissions){
+            adapter.getBluetoothLeScanner().startScan(callback);
 
-            adapter.startLeScan(mLeScanCallback);
             animationView.setVisibility(View.VISIBLE);
         }
     }
@@ -101,10 +133,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }//onActivityResult
 
-    private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
+
+
+
+    ScanCallback callback = new ScanCallback() {
         @Override
-        public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
-            Log.d("LE SCAN", bluetoothDevice.getAddress());
+        public void onScanResult(int callbackType, ScanResult result) {
+            super.onScanResult(callbackType, result);
+            BluetoothDevice bluetoothDevice = result.getDevice();
+            Log.d("LE SCAN", bluetoothDevice.getAddress() + " --->" + LOCK_MAC_ADDRESS);
+
             if(bluetoothDevice.getAddress().equals(LOCK_MAC_ADDRESS)){
                 status.setText("Lock Discovered");
                 ourLock = bluetoothDevice;
@@ -114,6 +152,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        @Override
+        public void onScanFailed(int errorCode) {
+            super.onScanFailed(errorCode);
+            Log.e("FAILED",String.valueOf(errorCode));
+        }
     };
 
     private BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -230,14 +273,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View view) {
 
-            //TEST CODE
-
-
-
             if (ourLock != null) {
                 animationView.playAnimation();
                 buttonPressed = true;
                 if (buttonPressed) {
+
                     mBluetoothGatt = ourLock.connectGatt(MainActivity.this, false, mGattCallback);
                 }
                 new Handler().postDelayed(new Runnable() {
@@ -245,8 +285,7 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         animationView.setProgress(0.0f);
                         buttonPressed = false;
-                        ourLock = null;
-                        //adapter.stopLeScan(mLeScanCallback);
+                        //ourLock = null;
                     }
                 }, 3000);
             }else{
@@ -302,5 +341,11 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return cipherText;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        adapter.getBluetoothLeScanner().stopScan(callback);
     }
 }

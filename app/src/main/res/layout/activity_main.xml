@@ -24,17 +24,28 @@
         android:layout_centerHorizontal="true"
         android:textSize="15sp"
         android:textColor="#000"
-        android:text="Bluetooth - based secure lock system\n\nLock MAC Address: FF:FF:30:04:C6:56" />
+        android:text="Bluetooth - based secure lock system" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textSize="15sp"
+        android:textColor="#000"
+        android:layout_below="@id/tVSecureText"
+        android:id="@+id/tVLockDetails"
+        android:text="Lock MAC Address: FF:FF:30:04:C6:56"
+        android:layout_marginTop="15dp"/>
 
     <TextView
         android:id="@+id/connectedStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tVSecureText"
+        android:layout_below="@+id/tVLockDetails"
         android:layout_centerHorizontal="true"
         android:textSize="15sp"
         android:textColor="#000"
-        android:layout_margin="10dp"
+        android:layout_marginTop="10dp"
         android:text="Status: Lock not detected"/>
 
     <TextView
