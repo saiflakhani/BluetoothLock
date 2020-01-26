@@ -29,13 +29,23 @@ public class CallAPI extends AsyncTask<String, String, String> {
     private Request request;
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
-    private static final String JSON_DATA_TO_POST = "{\"userId\": 232202}";
+    private String userId = "232202";
+    private String JSON_DATA_TO_POST = "{\"userId\":"+userId+"}";
     private static final String URL_TO_POST = "http://app.nokelock.com:8080/newNokelock/lock/getLockList";
-    private static final String AUTH_TOKEN = "ff11dfc338d644c98d361cf029388af8";
+    private String AUTH_TOKEN = "ff11dfc338d644c98d361cf029388af8";
     private String responseFinal = "";
     public AsyncResponse delegate = null;
     Context context;
     private ProgressDialog dialog;
+
+        public CallAPI(Context context, String userId, String token){
+            this.userId = userId;
+            this.AUTH_TOKEN = token;
+            //set context variables if required
+            this.context = context;
+            dialog = new ProgressDialog(context);
+            dialog.show();
+        }
 
         public CallAPI(Context context){
             //set context variables if required
@@ -74,7 +84,7 @@ public class CallAPI extends AsyncTask<String, String, String> {
                      System.out.println(responseHeaders.name(i) + ": " + responseHeaders.value(i));
                  }
                  responseFinal = response.body().string();
-                 System.out.println(responseFinal);
+                 System.out.println("Token Response -->" + responseFinal);
                  //responseFinal = response.body().string();
                  return responseFinal;
              }catch (IOException e)

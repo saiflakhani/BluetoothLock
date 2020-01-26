@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,6 +18,7 @@ import android.widget.ListView;
 import com.google.gson.Gson;
 import com.quicsolv.bluetoothlock.api.AsyncResponse;
 import com.quicsolv.bluetoothlock.api.CallAPI;
+import com.quicsolv.bluetoothlock.api.TokenAPI;
 import com.quicsolv.bluetoothlock.pojo.LockProperties;
 
 import org.json.JSONArray;
@@ -38,9 +40,10 @@ public class SelectLockActivity extends AppCompatActivity implements AsyncRespon
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_lock);
         context = this;
-        CallAPI callAPI = new CallAPI(context);
-        callAPI.delegate = this;
-        callAPI.execute();
+
+        TokenAPI tokenAPI = new TokenAPI(context);
+        tokenAPI.delegate = this;
+        tokenAPI.execute();
     }
 
 
@@ -77,6 +80,25 @@ public class SelectLockActivity extends AppCompatActivity implements AsyncRespon
 
     }
 
+    @Override
+    public void tokenApiFinish(String output){
+        try {
+            JSONObject tokenResponse = new JSONObject(output);
+            JSONObject result = tokenResponse.getJSONObject("result");
+            String userId = result.getString("userId");
+            String token = result.getString("token");
+            CallAPI callAPI = new CallAPI(context,userId,token);
+            callAPI.delegate = this;
+            callAPI.execute();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void tokenApiFailed(String output) {
+        Log.d("FAILED",output);
+    }
 
 
     @Override
