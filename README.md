@@ -22,6 +22,7 @@ Version 2.0
 - Added better encryption support
 - Upgraded libraries from LeScan to BluetoothLeScanner
 - Added App Logos
+- Added another API Call to fix token Bug.
 
 ## Future work
 ~Move from hardcoded keys to keys-per-lock~
