@@ -11,10 +11,10 @@
     <ImageView
         android:id="@+id/iVQSLogo"
         android:layout_centerHorizontal="true"
-        android:layout_margin="20dp"
-        android:layout_width="wrap_content"
+        android:layout_margin="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/qs" />
+        android:src="@drawable/logo_placeholder" />
 
     <TextView
         android:id="@+id/tVSecureText"
